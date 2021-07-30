@@ -7,6 +7,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
 
+/**
+ * Class for KeyBindings, instantiated in {@link me.doclic.minecraft.mods.addons.DoclicAddonsMod#DoclicAddonsMod()}
+ */
 public class KeyBindings {
 
     /**
@@ -22,6 +25,9 @@ public class KeyBindings {
      */
     private static boolean alreadyCreated = false;
 
+    /**
+     * Registers the KeyBindings
+     */
     public KeyBindings() {
 
         // Preventing multiple instances

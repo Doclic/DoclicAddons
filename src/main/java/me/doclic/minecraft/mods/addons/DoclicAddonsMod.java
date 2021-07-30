@@ -30,7 +30,12 @@ import java.util.List;
 /**
  * Mod class
  */
-@Mod(modid = DoclicAddonsMod.MOD_ID, version = DoclicAddonsMod.VERSION, clientSideOnly = true, canBeDeactivated = true)
+@Mod(
+        modid = DoclicAddonsMod.MOD_ID,
+        version = DoclicAddonsMod.VERSION,
+        clientSideOnly = true,
+        canBeDeactivated = true
+)
 public class DoclicAddonsMod {
 
     /**
