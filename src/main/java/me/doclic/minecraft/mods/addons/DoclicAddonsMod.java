@@ -134,8 +134,14 @@ public class DoclicAddonsMod {
         if (!Minecraft.getMinecraft().gameSettings.advancedItemTooltips) return;
 
         // Free Cookie owner
-        final String cookieOwner = NetworkingUtils.getNameFromUUID(compound.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("cookie_free_player_id"));
-        if (!cookieOwner.isEmpty() && cookieOwner != null) e.toolTip.add(ChatColor.GRAY + "Free Cookie Owner: " + ChatColor.DARK_GRAY + cookieOwner);
+        final String cookieOwnerUUID = compound.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("cookie_free_player_id");
+        if (cookieOwnerUUID != null && !cookieOwnerUUID.isEmpty()) {
+
+            final String cookieOwner = NetworkingUtils.getNameFromUUID(cookieOwnerUUID);
+            if (cookieOwner != null && !cookieOwner.isEmpty())
+                e.toolTip.add(ChatColor.GRAY + "Free Cookie Owner: " + ChatColor.DARK_GRAY + cookieOwner);
+
+        }
 
         // Showing NBT Tags
         final int maximumLength = ConfigurationManager.getNBTTooltipMaxLength();
