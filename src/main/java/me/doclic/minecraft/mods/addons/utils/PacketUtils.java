@@ -1,10 +1,12 @@
 package me.doclic.minecraft.mods.addons.utils;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import me.doclic.minecraft.mods.addons.DoclicAddonsMod;
-import io.netty.channel.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.Packet;
 
@@ -16,14 +18,24 @@ import java.util.LinkedList;
 public class PacketUtils {
 
     /**
-     * The name for the Packet Disabler {@link ChannelDuplexHandler}
+     * The Packet Disabler
      */
-    private static final String packetDisablerName = "packet_disabler";
+    private static final CustomPacketHandler PACKET_DISABLER = new CustomPacketHandler() {
+
+        @Override
+        public String getName() { return "packet_disabler"; }
+        @Override
+        public void onWrite(Object packet) {
+            QUEUED_PACKETS.add((Packet<? extends INetHandler>) packet);}
+        @Override
+        public void onRead(Object packet) { }
+
+    };
     /**
      * The queued outgoing (Server bound) packets
      * Check https://web.archive.org/web/20151222133335/https://wiki.vg/Protocol for more information
      */
-    private static final LinkedList<Packet<? extends INetHandler>> queuedPackets = new LinkedList<Packet<? extends INetHandler>>();
+    private static final LinkedList<Packet<? extends INetHandler>> QUEUED_PACKETS = new LinkedList<Packet<? extends INetHandler>>();
 
     /**
      * This function stops disable sending Packets to the server
@@ -34,29 +46,14 @@ public class PacketUtils {
         // Getting the Minecraft instance
         final Minecraft minecraft = Minecraft.getMinecraft();
 
-        // Creating the Packet Handler
-        final ChannelDuplexHandler packetHandler = new ChannelDuplexHandler() {
-
-            @Override
-            public void write(ChannelHandlerContext context, Object packet, ChannelPromise promise) {
-
-                queuedPackets.add((Packet<? extends INetHandler>) packet);
-
-            }
-
-        };
-
         // Registering the Packet Handler to the pipeline
-        final ChannelPipeline pipeline = minecraft.getNetHandler().getNetworkManager().channel().pipeline();
-        /// Preventing from registering twice which would crash the game
-        if (pipeline.get(packetDisablerName) != null) {
+        if (!addPacketHandler(PACKET_DISABLER)) {
 
+            // Error message
             minecraft.thePlayer.addChatMessage(TextUtils.formatText(ChatColor.RED + "Packet writing was already stopped."));
             return;
 
         }
-        /// Actually register the Custom Packet Handler
-        pipeline.addBefore("packet_handler", packetDisablerName, packetHandler);
 
         // Info
         DoclicAddonsMod.LOGGER.info("Stopped packet writing");
@@ -71,35 +68,27 @@ public class PacketUtils {
     public static void enableWriting() {
 
         // Getting variables
-        final Minecraft minecraft = Minecraft.getMinecraft();
-        final EntityPlayerSP player = minecraft.thePlayer;
-        final NetHandlerPlayClient networkHandler = minecraft.getNetHandler();
-        final Channel channel = networkHandler.getNetworkManager().channel();
+        final EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 
-        // Checking if the Custom Packet Handler is in the Pipeline
-        if (channel.pipeline().get(packetDisablerName) == null) {
+        // Removing the Packet Handler from the Pipeline
+        if (!removePacketHandler(PACKET_DISABLER)) {
 
+            // Error message
             player.addChatMessage(TextUtils.formatText(ChatColor.RED + "Packet writing is already enabled!"));
             return;
 
         }
-
-        // Removing the Packet Handler from the Pipeline
-        channel.eventLoop().submit(new Runnable() {
-            @Override
-            public void run() { channel.pipeline().remove(packetDisablerName); }
-        });
 
         // Info
         DoclicAddonsMod.LOGGER.info("Restarted packet writing");
         player.addChatMessage(TextUtils.formatText(ChatColor.BLUE + "Restarted packet writing"));
 
         // Sending the Packets
-        final int size = queuedPackets.size();
+        final int size = QUEUED_PACKETS.size();
         for (int i = 0; i < size; i++) {
 
-            networkHandler.addToSendQueue(queuedPackets.getFirst());
-            queuedPackets.removeFirst();
+            sendPacket(QUEUED_PACKETS.getFirst());
+            QUEUED_PACKETS.removeFirst();
 
         }
 
@@ -113,6 +102,105 @@ public class PacketUtils {
     public static void sendPacket(Packet<? extends INetHandler> packet) {
 
         Minecraft.getMinecraft().getNetHandler().addToSendQueue(packet);
+
+    }
+
+    /**
+     * Adds a {@link CustomPacketHandler} to the pipeline
+     *
+     * @param packetHandler The Packet Handler you're adding
+     * @return true if the {@link CustomPacketHandler} was registered
+     */
+    public static boolean addPacketHandler(final CustomPacketHandler packetHandler) {
+
+        if (isPacketHandlerRegistered(packetHandler.getName())) return false;
+        Minecraft.getMinecraft().getNetHandler().getNetworkManager().channel().pipeline().addBefore(
+                "packet_handler",
+                packetHandler.getName(),
+                new ChannelDuplexHandler() {
+
+                    @Override
+                    public void write(ChannelHandlerContext context, Object packet, ChannelPromise promise) { packetHandler.onWrite(packet); }
+                    @Override
+                    public void channelRead(ChannelHandlerContext context, Object packet) { packetHandler.onRead(packet); }
+
+                }
+        );
+        return true;
+
+    }
+
+    /**
+     * Removes a {@link CustomPacketHandler} from the pipeline
+     *
+     * @param packetHandler The Packet Handler you're removing
+     * @return true if the {@link CustomPacketHandler} was removed
+     */
+    public static boolean removePacketHandler(CustomPacketHandler packetHandler) { return removePacketHandler(packetHandler.getName()); }
+
+    /**
+     * Removes a {@link CustomPacketHandler} from the pipeline
+     *
+     * @param name The name of the Packet Handler you're removing
+     * @return true if the {@link CustomPacketHandler} was removed
+     */
+    public static boolean removePacketHandler(final String name) {
+
+        if (isPacketHandlerRegistered(name)) return false;
+        final Channel channel = Minecraft.getMinecraft().getNetHandler().getNetworkManager().channel();
+        channel.eventLoop().submit(new Runnable() {
+            @Override
+            public void run() { channel.pipeline().remove(name); }
+        });
+        return true;
+
+    }
+
+    /**
+     * Returns true if the {@link CustomPacketHandler} was already added
+     *
+     * @param packetHandler The Packet Handler you're checking
+     * @return true if the {@link CustomPacketHandler} was already added
+     */
+    public static boolean isPacketHandlerRegistered(CustomPacketHandler packetHandler) { return isPacketHandlerRegistered(packetHandler.getName()); }
+
+    /**
+     * Returns true if the {@link CustomPacketHandler} was already added
+     *
+     * @param name The name of the {@link CustomPacketHandler}
+     * @return true if the {@link CustomPacketHandler} was already added
+     */
+    public static boolean isPacketHandlerRegistered(String name) {
+
+        return Minecraft.getMinecraft().getNetHandler().getNetworkManager().channel().pipeline().get(name) == null;
+
+    }
+
+    /**
+     * Allows you to handle packets your own way
+     */
+    public interface CustomPacketHandler {
+
+        /**
+         * Returns the name of the {@link ChannelDuplexHandler} in the pipeline
+         *
+         * @return the name of the {@link ChannelDuplexHandler} in the pipeline
+         */
+        String getName();
+
+        /**
+         * Called when the client sends a Packet to the server
+         *
+         * @param packet The packet sent
+         */
+        void onWrite(Object packet);
+
+        /**
+         * Called when the server sends a Packet to the client
+         *
+         * @param packet The packet sent
+         */
+        void onRead(Object packet);
 
     }
 
