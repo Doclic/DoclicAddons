@@ -4,7 +4,6 @@ import me.doclic.minecraft.mods.addons.commands.*;
 import me.doclic.minecraft.mods.addons.hypixel.commands.APIKeyCommand;
 import me.doclic.minecraft.mods.addons.hypixel.skyblock.AuctionBot;
 import me.doclic.minecraft.mods.addons.hypixel.skyblock.commands.AuctionBotCommand;
-import me.doclic.minecraft.mods.addons.hypixel.skyblock.utils.SkyblockUtils;
 import me.doclic.minecraft.mods.addons.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -80,7 +79,7 @@ public class DoclicAddonsMod {
         ClientCommandHandler.instance.registerCommand(new DoclicAddonsHelpCommand());
         ClientCommandHandler.instance.registerCommand(new LightCommand());
         final SetNBTTooltipMaxLengthCommand lengthCommand = new SetNBTTooltipMaxLengthCommand();
-        ClientCommandHandler.instance.registerCommand(new SetNBTTooltipMaxLengthCommand());
+        ClientCommandHandler.instance.registerCommand(lengthCommand);
         ClientCommandHandler.instance.registerCommand(new ToggleNBTCopyingCommand());
         ClientCommandHandler.instance.registerCommand(new ToggleNBTTooltipCommand());
 
@@ -135,9 +134,8 @@ public class DoclicAddonsMod {
         if (!Minecraft.getMinecraft().gameSettings.advancedItemTooltips) return;
 
         // Free Cookie owner
-        final String cookieOwner = SkyblockUtils.getCookieOwner(compound.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("cookie_free_player_id"));
-        if (cookieOwner != null)
-            e.toolTip.add(ChatColor.GRAY + "Free Cookie Owner: " + ChatColor.DARK_GRAY + cookieOwner);
+        final String cookieOwner = NetworkingUtils.getNameFromUUID(compound.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("cookie_free_player_id"));
+        e.toolTip.add(ChatColor.GRAY + "Free Cookie Owner: " + ChatColor.DARK_GRAY + cookieOwner);
 
         // Showing NBT Tags
         final int maximumLength = ConfigurationManager.getNBTTooltipMaxLength();

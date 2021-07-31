@@ -1,6 +1,5 @@
 package me.doclic.minecraft.mods.addons.utils;
 
-import me.doclic.minecraft.mods.addons.DoclicAddonsMod;
 import net.minecraft.util.IChatComponent;
 
 import java.awt.Toolkit;

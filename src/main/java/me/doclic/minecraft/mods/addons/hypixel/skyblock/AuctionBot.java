@@ -3,7 +3,6 @@ package me.doclic.minecraft.mods.addons.hypixel.skyblock;
 import com.google.gson.*;
 import me.doclic.minecraft.mods.addons.DoclicAddonsMod;
 import me.doclic.minecraft.mods.addons.hypixel.api.HypixelAPI;
-import me.doclic.minecraft.mods.addons.hypixel.api.skyblock.auctions.AuctionHouse;
 import me.doclic.minecraft.mods.addons.utils.ChatColor;
 import me.doclic.minecraft.mods.addons.utils.MCIOUtils;
 import me.doclic.minecraft.mods.addons.utils.TextUtils;
@@ -20,24 +19,72 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Auction Bot class
+ */
 public class AuctionBot {
 
+    /**
+     * The delay between each auction check
+     */
     private static final long CHECK_DELAY = 3 * 60 * 1000;
+    /**
+     * The {@link ArrayList} of every ID checked
+     */
     private static final ArrayList<String> ID_LIST = new ArrayList<String>();
 
+    /**
+     * Boolean for if Auction Bot is enabled
+     */
     private static boolean enabled = false;
+    /**
+     * If true, Auction Bot will send messages
+     */
     private static boolean sendMessages = false;
 
+    /**
+     * The prices file used to find average prices
+     */
     private static final File PRICES = new File(MCIOUtils.STORAGE_PATH, "ah_bin.json");
 
 
+    /**
+     * Enables Auction Bot and does an asynchronous ah check using {@link #checkAsync()}
+     *
+     * @see #checkAsync()
+     * @see #start()
+     */
     public static void enable() { enabled = true; checkAsync(); }
+
+    /**
+     * Disables the Auction Bot, current checks won't be stopped
+     *
+     * @see #stop()
+     */
     public static void disable() { enabled = false; sendMessages = false; }
 
+    /**
+     * Starts sending messages and enables the Auction Bot
+     *
+     * @see #enable()
+     */
     public static void start() { enable(); sendMessages = true; }
+
+    /**
+     * Stops sending messages
+     * Doesn't disable Auction Bot
+     *
+     * @see #disable()
+     */
     public static void stop() { sendMessages = false; }
 
 
+    /**
+     * Adds a price to ah_bin.json
+     *
+     * @param id The ID of the item
+     * @param price The price of the item
+     */
     private static void addPrice(String id, int price) {
 
         if (!PRICES.setWritable(true)) return;
@@ -70,6 +117,12 @@ public class AuctionBot {
 
     }
 
+    /**
+     * Gets the average price of an item using values set in ah_bin.json
+     *
+     * @param id The ID of the item you want to get the average price for
+     * @return The average price for this item
+     */
     private static int getAveragePrice(String id) {
 
         final JsonObject json;
@@ -96,7 +149,17 @@ public class AuctionBot {
     }
 
 
+    /**
+     * Checks the Auction House asynchronously
+     *
+     * @see #checkAsync(Runnable)
+     */
     public static void checkAsync() { checkAsync(null); }
+    /**
+     * Checks the Auction House asynchronously
+     *
+     * @param runAfter Runnable ran after the check
+     */
     public static void checkAsync(final Runnable runAfter) {
 
         final Thread thread = new Thread(new Runnable() { @Override public void run() { check(); }});
@@ -114,6 +177,9 @@ public class AuctionBot {
 
     }
 
+    /**
+     * Checks the Auction House
+     */
     private static void check() {
 
         String best = null;
@@ -178,6 +244,9 @@ public class AuctionBot {
 
     }
 
+    /**
+     * Schedules an async check
+     */
     private static void scheduleCheck() {
 
         final Timer timer = new Timer();
@@ -186,20 +255,34 @@ public class AuctionBot {
     }
 
 
+    /**
+     * Class used to schedule checks
+     */
     private static class ScheduledCheck extends TimerTask {
 
+        /**
+         * The Timer used to re-check later
+         */
         final Timer timer;
 
+        /**
+         * Creates a ScheduledCheck
+         *
+         * @param timer The Timer that will be used to re-check later, if null won't re-check
+         */
         private ScheduledCheck(Timer timer) {
 
             this.timer = timer;
 
         }
 
+        /**
+         * Checking the Auction House
+         */
         @Override
         public void run() {
 
-            check();
+            checkAsync();
 
             if (enabled && timer != null) timer.schedule(this, CHECK_DELAY);
 

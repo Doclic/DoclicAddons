@@ -7,17 +7,43 @@ import me.doclic.minecraft.mods.addons.utils.TextUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 
+/**
+ * /apikey Command class
+ */
 public class APIKeyCommand extends CommandBase {
 
+    /**
+     * Always returns true
+     *
+     * @param sender This parameter is just there for the Override
+     * @return true
+     */
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender sender) { return true; }
 
+    /**
+     * Returns the name of the command
+     *
+     * @return "apikey"
+     */
     @Override
     public String getCommandName() { return "apikey"; }
 
+    /**
+     * Returns the usage for this command
+     *
+     * @param sender This parameter is just there for the Override
+     * @return "apikey <key>"
+     */
     @Override
     public String getCommandUsage(ICommandSender sender) { return getCommandName() + " <key>"; }
 
+    /**
+     * Called when /apikey is used
+     *
+     * @param sender The sender of the command
+     * @param args The arguments of the command
+     */
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
 

@@ -15,11 +15,33 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Map;
 
+/**
+ * Class used to access the Hypixel API
+ */
 public class HypixelAPI {
 
+    /**
+     * Gets 1000 auctions in the Hypixel Auction House
+     *
+     * @param page The page you're getting (each page contains 1000 auctions)
+     * @return The {@link AuctionHouse} instance for the page you entered
+     */
     public static AuctionHouse getAuctionHouse(int page) {
         return (AuctionHouse) getNoException("skyblock/auctions", AuctionHouse.class, "page=" + page); }
+
+    /**
+     * Gets the API Key info for the current key
+     *
+     * @return The {@link APIKeyInfo} instance for the current key
+     */
     public static APIKeyInfo getAPIKeyInfo() { return (APIKeyInfo) getNoException("key",  APIKeyInfo.class); }
+
+    /**
+     * Returns true if the set API Key is valid
+     * This function uses {@link #getAPIKeyInfo()}
+     *
+     * @return true if the set API Key is valid
+     */
     public static boolean isCurrentAPIKeyValid() {
 
         try { return get("key", APIKeyInfo.class).isSuccessful(); }
@@ -28,6 +50,14 @@ public class HypixelAPI {
     }
 
 
+    /**
+     * Calls {@link #get(String, Class, String...)} and handles Exceptions using {@link Throwable#printStackTrace()}
+     *
+     * @param apiUrl The URL to the API (not including the https://api.hypixel.net/)
+     * @param clazz The {@link Class} of the return value
+     * @param params The parameters for the request
+     * @return An instance of the class you provided with the values set or null if an error comes up
+     */
     private static Request getNoException(String apiUrl, Class<? extends Request> clazz, String... params) {
 
         try { return get(apiUrl, clazz, params); }
@@ -37,6 +67,14 @@ public class HypixelAPI {
 
     }
 
+    /**
+     * Returns an instance of the class you provided with the values set
+     *
+     * @param apiUrl The URL to the API (not including the https://api.hypixel.net/)
+     * @param clazz The {@link Class} of the return value
+     * @param params The parameters for the request
+     * @return An instance of the class you provided with the values set
+     */
     private static Request get(String apiUrl, Class<? extends Request> clazz, String... params) throws IOException, InstantiationException, IllegalAccessException {
 
         final Request instance = clazz.newInstance();
@@ -111,8 +149,18 @@ public class HypixelAPI {
 
     }
 
+    /**
+     * Class used for request to the Hypixel API
+     * Variables are set in the {@link #get(String, Class, String...)} using reflection
+     * The name of the variable has to be the same as in the JSON returned by the API
+     */
     public interface Request {
 
+        /**
+         * Returns true if the request was successful
+         *
+         * @return true if the request was successful
+         */
         boolean isSuccessful();
 
     }

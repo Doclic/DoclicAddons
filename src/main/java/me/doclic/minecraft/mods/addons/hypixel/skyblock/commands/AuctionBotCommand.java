@@ -6,17 +6,43 @@ import me.doclic.minecraft.mods.addons.utils.TextUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 
+/**
+ * /auctionbot Command class
+ */
 public class AuctionBotCommand extends CommandBase {
 
+    /**
+     * Always returns true
+     *
+     * @param sender This parameter is just there for the Override
+     * @return true
+     */
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender sender) { return true; }
 
+    /**
+     * Returns the name of the command
+     *
+     * @return "auctionbot"
+     */
     @Override
     public String getCommandName() { return "auctionbot"; }
 
+    /**
+     * Returns the usage for this command
+     *
+     * @param sender This parameter is just there for the Override
+     * @return "auctionbot <start OR stop OR help>"
+     */
     @Override
     public String getCommandUsage(ICommandSender sender) { return getCommandName() + " <start OR stop OR help>"; }
 
+    /**
+     * Called when /auctionbot is used
+     *
+     * @param sender The sender of the command
+     * @param args The arguments of the command
+     */
     @Override
     public void processCommand(final ICommandSender sender, String[] args) {
 

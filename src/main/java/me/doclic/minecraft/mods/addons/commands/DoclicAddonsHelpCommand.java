@@ -7,8 +7,14 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.IChatComponent;
 
+/**
+ * /doclicaddonshelp Command class
+ */
 public class DoclicAddonsHelpCommand extends CommandBase {
 
+    /**
+     * The pages of the command
+     */
     private final String[][][] commands = {
 
             {
@@ -24,21 +30,38 @@ public class DoclicAddonsHelpCommand extends CommandBase {
 
     };
 
+    /**
+     * Always returns true
+     *
+     * @param sender This parameter is just there for the Override
+     * @return true
+     */
     @Override
-    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
-        return true;
-    }
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) { return true; }
 
+    /**
+     * Returns the name of the command
+     *
+     * @return "doclicaddonshelp"
+     */
     @Override
-    public String getCommandName() {
-        return "doclicaddonshelp";
-    }
+    public String getCommandName() { return "doclicaddonshelp"; }
 
+    /**
+     * Returns the usage for this command
+     *
+     * @param sender This parameter is just there for the Override
+     * @return "doclicaddonshelp [page]"
+     */
     @Override
-    public String getCommandUsage(final ICommandSender sender) {
-        return getCommandName() + " [page]";
-    }
+    public String getCommandUsage(final ICommandSender sender) { return getCommandName() + " [page]"; }
 
+    /**
+     * Called when /doclicaddonshelp is used
+     *
+     * @param sender The sender of the command
+     * @param args The arguments of the command
+     */
     @Override
     public void processCommand(final ICommandSender sender, final String[] args) {
 
