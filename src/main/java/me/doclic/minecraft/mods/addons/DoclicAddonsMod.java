@@ -135,7 +135,7 @@ public class DoclicAddonsMod {
 
         // Free Cookie owner
         final String cookieOwner = NetworkingUtils.getNameFromUUID(compound.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("cookie_free_player_id"));
-        e.toolTip.add(ChatColor.GRAY + "Free Cookie Owner: " + ChatColor.DARK_GRAY + cookieOwner);
+        if (!cookieOwner.isEmpty() && cookieOwner != null) e.toolTip.add(ChatColor.GRAY + "Free Cookie Owner: " + ChatColor.DARK_GRAY + cookieOwner);
 
         // Showing NBT Tags
         final int maximumLength = ConfigurationManager.getNBTTooltipMaxLength();
