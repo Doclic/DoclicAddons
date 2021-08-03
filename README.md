@@ -8,3 +8,4 @@ DoclicAddons is a Minecraft Forge mod developed by Doclic with some utilities fo
   - A WIP Auction Bot
   - A Packet Disabler (To imitate unplugging your Ethernet cable or disabling Wi-Fi)
   - Scrollable Tooltips
+  - A /packetviewer commands that sends all incoming and outgoing Packets in chat
