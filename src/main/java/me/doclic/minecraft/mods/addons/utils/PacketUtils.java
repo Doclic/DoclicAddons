@@ -25,10 +25,10 @@ public class PacketUtils {
         @Override
         public String getName() { return "packet_disabler"; }
         @Override
-        public void onWrite(Object packet) {
-            QUEUED_PACKETS.add((Packet<? extends INetHandler>) packet);}
+        public boolean onWrite(Object packet) {
+            QUEUED_PACKETS.add((Packet<? extends INetHandler>) packet); return false; }
         @Override
-        public void onRead(Object packet) { }
+        public boolean onRead(Object packet) { return true; }
 
     };
     /**
@@ -95,6 +95,24 @@ public class PacketUtils {
     }
 
     /**
+     * Converts a Packet to a String used in the /packetviewer command
+     *
+     * @param packet The packet you want to convert to a string
+     * @return The String for the packet
+     */
+    public static String packetToString(Packet<? extends INetHandler> packet) {
+
+        final String className = packet.getClass().getName();
+        final String[] splitClassName = className.split("Packet");
+
+
+        try { return splitClassName[1] + "ID: " + splitClassName[0].substring(1); }
+        catch (ArrayIndexOutOfBoundsException e) { e.printStackTrace(); System.out.println(className); }
+        return null;
+
+    }
+
+    /**
      * Sends a Packet to the server
      *
      * @param packet The Packet you're sending
@@ -120,9 +138,11 @@ public class PacketUtils {
                 new ChannelDuplexHandler() {
 
                     @Override
-                    public void write(ChannelHandlerContext context, Object packet, ChannelPromise promise) { packetHandler.onWrite(packet); }
+                    public void write(ChannelHandlerContext context, Object packet, ChannelPromise promise) throws Exception {
+                        if (packetHandler.onWrite(packet)) super.write(context, packet, promise); }
                     @Override
-                    public void channelRead(ChannelHandlerContext context, Object packet) { packetHandler.onRead(packet); }
+                    public void channelRead(ChannelHandlerContext context, Object packet) throws Exception {
+                        if (packetHandler.onRead(packet)) super.channelRead(context, packet); }
 
                 }
         );
@@ -146,7 +166,7 @@ public class PacketUtils {
      */
     public static boolean removePacketHandler(final String name) {
 
-        if (isPacketHandlerRegistered(name)) return false;
+        if (!isPacketHandlerRegistered(name)) return false;
         final Channel channel = Minecraft.getMinecraft().getNetHandler().getNetworkManager().channel();
         channel.eventLoop().submit(new Runnable() {
             @Override
@@ -172,7 +192,7 @@ public class PacketUtils {
      */
     public static boolean isPacketHandlerRegistered(String name) {
 
-        return Minecraft.getMinecraft().getNetHandler().getNetworkManager().channel().pipeline().get(name) == null;
+        return Minecraft.getMinecraft().getNetHandler().getNetworkManager().channel().pipeline().get(name) != null;
 
     }
 
@@ -192,15 +212,17 @@ public class PacketUtils {
          * Called when the client sends a Packet to the server
          *
          * @param packet The packet sent
+         * @return true if the packet should be written by the game
          */
-        void onWrite(Object packet);
+        boolean onWrite(Object packet);
 
         /**
          * Called when the server sends a Packet to the client
          *
          * @param packet The packet sent
+         * @return true if the packet should be read by the game
          */
-        void onRead(Object packet);
+        boolean onRead(Object packet);
 
     }
 

@@ -4,7 +4,11 @@ import me.doclic.minecraft.mods.addons.commands.*;
 import me.doclic.minecraft.mods.addons.hypixel.commands.APIKeyCommand;
 import me.doclic.minecraft.mods.addons.hypixel.skyblock.AuctionBot;
 import me.doclic.minecraft.mods.addons.hypixel.skyblock.commands.AuctionBotCommand;
-import me.doclic.minecraft.mods.addons.utils.*;
+import me.doclic.minecraft.mods.addons.utils.ChatColor;
+import me.doclic.minecraft.mods.addons.utils.KeyBindings;
+import me.doclic.minecraft.mods.addons.utils.MCIOUtils;
+import me.doclic.minecraft.mods.addons.utils.NetworkingUtils;
+import me.doclic.minecraft.mods.addons.utils.TextUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
@@ -32,8 +36,10 @@ import java.util.List;
 @Mod(
         modid = DoclicAddonsMod.MOD_ID,
         version = DoclicAddonsMod.VERSION,
+        name = DoclicAddonsMod.NAME,
         clientSideOnly = true,
-        canBeDeactivated = true
+        canBeDeactivated = true,
+        acceptedMinecraftVersions = "1.8.9"
 )
 public class DoclicAddonsMod {
 
@@ -45,6 +51,10 @@ public class DoclicAddonsMod {
      * The current version
      */
     public static final String VERSION = "vPre-21.07a";
+    /**
+     * The mod name
+     */
+    public static final String NAME = "Doclic Addons";
 
     /**
      * Directly reference a log4j logger.
@@ -82,6 +92,7 @@ public class DoclicAddonsMod {
         ClientCommandHandler.instance.registerCommand(lengthCommand);
         ClientCommandHandler.instance.registerCommand(new ToggleNBTCopyingCommand());
         ClientCommandHandler.instance.registerCommand(new ToggleNBTTooltipCommand());
+        ClientCommandHandler.instance.registerCommand(new PacketViewerCommand());
 
         ClientCommandHandler.instance.registerCommand(new APIKeyCommand());
         ClientCommandHandler.instance.registerCommand(new AuctionBotCommand());
